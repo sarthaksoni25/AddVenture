@@ -1,0 +1,24 @@
+{
+  "name": "addventure",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarthaksoni25/AddVenture.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sarthaksoni25/AddVenture/issues"
+  },
+  "homepage": "https://github.com/sarthaksoni25/AddVenture#readme",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "type": "module"
+}

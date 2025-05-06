@@ -1,0 +1,63 @@
+# ──────────────────────────────
+#  Common OS clutter
+# ──────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ──────────────────────────────
+#  Node / npm / Yarn
+# ──────────────────────────────
+node_modules/
+**/node_modules/
+
+# lockfiles you don’t want duplicated
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ──────────────────────────────
+#  Build output
+# ──────────────────────────────
+dist/
+build/
+client/dist/
+client/build/
+server/dist/
+.serverless/
+
+# ──────────────────────────────
+#  IDEs / editors
+# ──────────────────────────────
+.vscode/
+.idea/
+*.sw?
+*.sublime*
+
+# ──────────────────────────────
+#  Logs & debug
+# ──────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+
+# ──────────────────────────────
+#  Env & secrets
+# ──────────────────────────────
+.env
+.env.*
+.env.local
+
+# ──────────────────────────────
+#  Testing / coverage
+# ──────────────────────────────
+coverage/
+*.lcov
+
+# ──────────────────────────────
+#  Misc
+# ──────────────────────────────
+*.tgz
+*.zip
+*.tmp
+*.bak
