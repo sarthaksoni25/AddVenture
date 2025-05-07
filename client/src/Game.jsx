@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 
 const QUESTION_MS = 5_000; // 5-second limit
 const STEP_MS     = 50;    // update display every 50 ms
+const API_URL = import.meta.env.VITE_API_URL;
+
+
 
 export default function Game() {
   /* ────────── state ────────── */
@@ -15,10 +18,9 @@ export default function Game() {
 
   /* ────────── helpers ────────── */
   const loadQuestions = async () => {
-    const qs = await fetch('/api/sums').then(r => r.json());
+    const qs = await fetch(`${API_URL}/api/sums`).then(r => r.json());
     setQuestions(qs);
   };
-
   const startGame = async () => {
     await loadQuestions();
     setIdx(0);
