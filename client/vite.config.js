@@ -1,3 +1,4 @@
+console.log('vite config loaded');
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
