@@ -16,6 +16,7 @@ export default function Game({ history, setHistory }) {
   const [finished, setFinished] = useState(false);
 
   const loadQuestions = async () => {
+    console.log("API URL:", import.meta.env.VITE_API_URL);
     const qs = await fetch(`${API_URL}/api/sums`).then((r) => r.json());
     setQuestions(qs);
   };
