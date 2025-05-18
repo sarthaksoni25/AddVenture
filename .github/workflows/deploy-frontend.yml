@@ -19,7 +19,7 @@ jobs:
         working-directory: client
 
       - name: Build Vite app
-        run: npm run build
+        run: npm run build -- --mode production
         working-directory: client
 
       - name: Deploy to S3
