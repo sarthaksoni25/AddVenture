@@ -29,7 +29,7 @@ AddVenture/
 │   ├── src/            # Components and pages
 │   └── dist/           # Built static files (for S3)
 ├── server/             # Node.js backend
-│   └── guest-logs.json # Game logs (ignored by git)
+│   └── index.js
 ├── .github/workflows/  # GitHub Actions CI/CD
 │   ├── deploy-frontend.yml
 │   └── deploy-backend.yml
@@ -51,7 +51,7 @@ cd client
 npm install
 
 # Backend setup
-cd ../server
+cd server
 npm install
 ````
 
@@ -60,10 +60,10 @@ npm install
 ```bash
 # Start backend
 cd server
-node index.js
+npm start
 
 # Start frontend (in a separate terminal)
-cd ../client
+cd client
 npm run dev
 ```
 
@@ -90,6 +90,7 @@ npm run dev
 ---
 
 ## 📸 Screenshots
+![image](https://github.com/user-attachments/assets/c10f4bca-f027-4c9c-a383-6660ebc0369f)
 
 
 ---
