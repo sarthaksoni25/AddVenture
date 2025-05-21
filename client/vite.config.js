@@ -7,7 +7,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 export default defineConfig({
   plugins: [react()],
   server: {
-    ...(isDev && {
+    ...(isDev && fs.existsSync('../certs/key.pem') && {
       https: {
         key: fs.readFileSync('../certs/key.pem'),
         cert: fs.readFileSync('../certs/cert.pem'),

@@ -4,6 +4,7 @@ import Game from "./Game/Game";
 import UserLogin from "./User/UserLogin";
 import { useUser } from "./User/useUser.jsx";
 import GameHistory from "./History/GameHistory";
+import Leaderboard from "./Game/Leaderboard";
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -66,8 +67,18 @@ export default function App() {
               <Game history={history} setHistory={setHistory} />
             </div>
 
-            {/* Right: History panel */}
-            <GameHistory history={history} />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+                maxWidth: 300,
+                width: "100%",
+              }}
+            >
+              <Leaderboard />
+              <GameHistory history={history} />
+            </div>
           </>
         )}
       </Content>

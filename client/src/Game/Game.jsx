@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Typography, Button, Input, Space, Card } from "antd";
+import { useUser } from "../User/useUser";
+import { logGameStats } from "./logGameStats";
 
 const QUESTION_MS = 5000;
 const STEP_MS = 50;
@@ -14,6 +16,7 @@ export default function Game({ history, setHistory }) {
   const [results, setResults] = useState([]);
   const [startedAt, setStartedAt] = useState(null);
   const [finished, setFinished] = useState(false);
+  const { user } = useUser();
 
   const loadQuestions = async () => {
     console.log("API URL:", import.meta.env.VITE_API_URL);
@@ -39,6 +42,22 @@ export default function Game({ history, setHistory }) {
       const finalScore = newResults.filter(
         (r) => Number(r.given) === r.correct
       ).length;
+
+      setResults(newResults);
+      setFinished(true);
+
+      const elapsedTime = ((Date.now() - startedAt) / 1000).toFixed(2);
+
+      if (user) {
+        logGameStats({
+          guestId: user.guestId,
+          name: user.name,
+          isGuest: user.isGuest,
+          score: finalScore,
+          total: questions.length,
+          time: elapsedTime,
+        });
+      }
 
       setResults(newResults); // update full results
       setFinished(true);

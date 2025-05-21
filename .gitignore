@@ -60,3 +60,4 @@ coverage/
 *.zip
 *.tmp
 *.bak
+certs/*.pem
