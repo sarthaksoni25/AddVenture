@@ -12,6 +12,7 @@ const { Title } = Typography;
 export default function App() {
   const { user, logout } = useUser();
   const [history, setHistory] = useState([]);
+
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#121212" }}>
       <Header
@@ -31,6 +32,7 @@ export default function App() {
       <Content
         style={{
           display: "flex",
+          flexWrap: "wrap", // ✅ stack on mobile
           justifyContent: "center",
           alignItems: "flex-start",
           gap: "2rem",
@@ -43,13 +45,21 @@ export default function App() {
         ) : (
           <>
             {/* Left: Game area */}
-            <div style={{ maxWidth: 500, width: "100%" }}>
+            <div
+              style={{
+                flex: "1 1 100%",
+                maxWidth: "500px",
+                width: "100%",
+              }}
+            >
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   marginBottom: "1.5rem",
+                  flexWrap: "wrap",
+                  gap: "0.5rem",
                 }}
               >
                 <Typography.Title
@@ -67,13 +77,15 @@ export default function App() {
               <Game history={history} setHistory={setHistory} />
             </div>
 
+            {/* Right: Sidebar */}
             <div
               style={{
+                flex: "1 1 100%",
+                maxWidth: "420px", // ✅ room for leaderboard width
+                width: "100%",
                 display: "flex",
                 flexDirection: "column",
                 gap: "1rem",
-                maxWidth: 300,
-                width: "100%",
               }}
             >
               <Leaderboard />

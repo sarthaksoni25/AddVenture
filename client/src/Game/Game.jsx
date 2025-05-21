@@ -118,6 +118,7 @@ export default function Game({ history, setHistory }) {
           textAlign: "center",
           backgroundColor: "#1f1f1f",
           color: "white",
+          padding: "1.5rem", // add more breathing room
         }}
         bodyStyle={{ padding: "2rem" }}
       >
@@ -167,9 +168,16 @@ export default function Game({ history, setHistory }) {
               type="number"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
-              style={{ width: 100 }}
-              autoFocus
-              required
+              style={{
+                width: 100,
+                fontSize: "1.2rem", // bigger for touch
+                backgroundColor: "#2a2a2a",
+                color: "white",
+                border: "1px solid #555",
+                borderRadius: "4px",
+              }}
+              inputMode="numeric" // helps on mobile
+              pattern="[0-9]*"
             />
           </Space>
           <br />
