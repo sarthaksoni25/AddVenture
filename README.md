@@ -1,5 +1,10 @@
 # 🎮 AddVenture
 
+[![Backend Build](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy-backend.yml/badge.svg)](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy-backend.yml)
+[![Frontend Build](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy-frontend.yml/badge.svg)](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy-frontend.yml)
+[![Demo](https://img.shields.io/badge/demo-online-blue?style=flat-square)](https://www.add-venture.xyz/)
+
+
 Link: https://www.add-venture.xyz/
 
 A minimal mental math game built with speed and simplicity in mind.  
