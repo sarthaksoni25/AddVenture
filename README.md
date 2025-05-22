@@ -2,6 +2,10 @@
 
 Link: https://www.add-venture.xyz/
 
+[![Build](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy.yml/badge.svg)](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy.yml)
+[![Demo](https://img.shields.io/badge/demo-online-blue)](https://www.add-venture.xyz/)
+
+
 A minimal mental math game built with speed and simplicity in mind.  
 Solve rapid-fire addition puzzles and track your best scores!
 
