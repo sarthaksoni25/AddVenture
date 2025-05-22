@@ -3,6 +3,7 @@
 Link: https://www.add-venture.xyz/
 
 [![Build](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy.yml/badge.svg)](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy.yml)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Demo](https://img.shields.io/badge/demo-online-blue)](https://www.add-venture.xyz/)
 
 
