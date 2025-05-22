@@ -2,9 +2,9 @@
 
 Link: https://www.add-venture.xyz/
 
-[![Build](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy.yml/badge.svg)](https://github.com/sarthaksoni25/AddVenture/actions/workflows/deploy.yml)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Demo](https://img.shields.io/badge/demo-online-blue)](https://www.add-venture.xyz/)
+[![Build](https://img.shields.io/github/actions/workflow/status/sarthaksoni25/AddVenture/deploy.yml?label=build&style=flat-square)](https://github.com/sarthaksoni25/AddVenture/actions)
+[![License: MIT](https://img.shields.io/badge/license-MIT-gray.svg?style=flat-square)](LICENSE)
+[![Demo](https://img.shields.io/badge/demo-online-blue?style=flat-square)](https://www.add-venture.xyz/)
 
 
 A minimal mental math game built with speed and simplicity in mind.  
