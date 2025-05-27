@@ -5,7 +5,7 @@ import UserLogin from "./User/UserLogin";
 import { useUser } from "./User/useUser.jsx";
 import GameHistory from "./History/GameHistory";
 import Leaderboard from "./Game/Leaderboard";
-import logo from "./assets/logo.png";
+import Logo from "./assets/Logo.png";
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -29,7 +29,7 @@ export default function App() {
           }}
         >
           <img
-            src={logo}
+            src={Logo}
             alt="AddVenture Logo"
             style={{
               height: "190px",
