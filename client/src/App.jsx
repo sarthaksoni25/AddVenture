@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Layout, Typography, Button, Card } from "antd";
+import { Layout, Typography, Button } from "antd";
 import Game from "./Game/Game";
 import UserLogin from "./User/UserLogin";
 import { useUser } from "./User/useUser.jsx";
 import GameHistory from "./History/GameHistory";
 import Leaderboard from "./Game/Leaderboard";
+import logo from "./assets/logo.png";
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -14,45 +15,55 @@ export default function App() {
   const [history, setHistory] = useState([]);
 
   return (
-    <Layout style={{ minHeight: "100vh", backgroundColor: "#121212" }}>
+    <Layout style={{ minHeight: "100vh", backgroundColor: "#1f1f1f" }}>
+      {/* HEADER */}
       <Header
         style={{
           backgroundColor: "#1f1f1f",
+          padding: "2rem 0", // more vertical breathing room
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "1rem",
+          overflow: "visible", // allow any slight overflow (just in case)
         }}
       >
-        <Title level={2} style={{ color: "#00d4ff", margin: 0 }}>
-          AddVenture
-        </Title>
+        <img
+          src={logo}
+          alt="AddVenture Logo"
+          style={{
+            height: "190px",
+            objectFit: "contain",
+            marginTop: "20rem", // fixes the crop
+          }}
+        />
       </Header>
 
+      {/* CONTENT */}
       <Content
         style={{
           display: "flex",
-          flexWrap: "wrap", // ✅ stack on mobile
+          flexDirection: user ? "row" : "column",
           justifyContent: "center",
-          alignItems: "flex-start",
+          alignItems: user ? "flex-start" : "center",
           gap: "2rem",
           padding: "2rem",
           color: "white",
+          minHeight: "calc(100vh - 80px)", // subtract header height
         }}
       >
         {!user ? (
           <UserLogin />
         ) : (
           <>
-            {/* Left: Game area */}
+            {/* GAME AREA */}
             <div
               style={{
-                flex: "1 1 100%",
+                flex: 1,
                 maxWidth: "500px",
                 width: "100%",
               }}
             >
-              {/* Header with avatar, welcome, logout */}
+              {/* User Welcome Row */}
               <div
                 style={{
                   display: "flex",
@@ -82,16 +93,9 @@ export default function App() {
                       }}
                     />
                   )}
-                  <Typography.Title
-                    level={4}
-                    style={{
-                      margin: 0,
-                      color: "white",
-                      lineHeight: "40px",
-                    }}
-                  >
+                  <Title level={4} style={{ margin: 0, color: "white" }}>
                     Welcome, {user.name}
-                  </Typography.Title>
+                  </Title>
                 </div>
 
                 <Button type="primary" ghost onClick={logout}>
@@ -102,15 +106,15 @@ export default function App() {
               <Game history={history} setHistory={setHistory} />
             </div>
 
-            {/* Right: Sidebar */}
+            {/* SIDEBAR */}
             <div
               style={{
-                flex: "1 1 100%",
+                flex: 1,
                 maxWidth: "420px",
                 width: "100%",
                 display: "flex",
                 flexDirection: "column",
-                gap: "1rem",
+                gap: "1.5rem",
               }}
             >
               <Leaderboard />
