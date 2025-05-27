@@ -15,7 +15,7 @@ export default defineConfig({
       : false, // fallback to HTTP in case certs missing
     proxy: {
       "/api": {
-        target: "https://localhost:5000",
+        target: "http://localhost:5000",
         changeOrigin: true,
         secure: false, // allow self-signed cert
       },

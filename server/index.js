@@ -3,20 +3,17 @@ const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
-const https = require("https");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// HTTPS certs (relative to server directory)
-const key = fs.readFileSync(path.resolve(__dirname, "../certs/key.pem"));
-const cert = fs.readFileSync(path.resolve(__dirname, "../certs/cert.pem"));
-
 const allowedOrigins = [
   "https://add-venture.xyz",
   "https://www.add-venture.xyz",
-  "http://localhost:5173", // keep this if using local dev
+  "http://localhost:5173",
+  "https://localhost:5173", // ✅ add this if using HTTPS on Vite
 ];
+
 
 app.use(
   cors({
@@ -33,7 +30,8 @@ app.use(
   })
 );
 
-app.use(express.json()); // ✅ to parse JSON body
+app.use(express.json());
+
 app.use((err, req, res, next) => {
   console.error("💥 Global error caught:", err.stack || err);
   res.status(500).json({ error: "Internal Server Error" });
@@ -44,7 +42,6 @@ const { OAuth2Client } = require("google-auth-library");
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-// ✅ POST /api/auth → Google Login
 app.post("/api/auth", async (req, res) => {
   console.log("🛬 Incoming Google login...");
   const { credential } = req.body;
@@ -69,10 +66,8 @@ app.post("/api/auth", async (req, res) => {
   }
 });
 
-// ✅ GET /api/ping
 app.get("/api/ping", (_, res) => res.json({ msg: "pong" }));
 
-// ✅ GET /api/sums → Random sums
 app.get("/api/sums", (_, res) => {
   const sums = Array.from({ length: 5 }).map((_, idx) => {
     const a = Math.floor(Math.random() * 20) + 1;
@@ -82,7 +77,6 @@ app.get("/api/sums", (_, res) => {
   res.json(sums);
 });
 
-// ✅ POST /api/log → Save game stats
 app.post("/api/log", (req, res) => {
   const logEntry = req.body;
   const filePath = path.join(__dirname, "guest-logs.json");
@@ -95,11 +89,9 @@ app.post("/api/log", (req, res) => {
 
   logs.push(logEntry);
   fs.writeFileSync(filePath, JSON.stringify(logs, null, 2));
-
   res.status(200).json({ status: "ok", received: logEntry });
 });
 
-// ✅ GET /api/leaderboard
 app.get("/api/leaderboard", (req, res) => {
   const filePath = path.join(__dirname, "guest-logs.json");
 
@@ -150,7 +142,7 @@ app.get("/api/leaderboard", (req, res) => {
   res.json(leaderboard);
 });
 
-// ✅ Start HTTPS server
-https.createServer({ key, cert }, app).listen(PORT, () => {
-  console.log(`🔐 HTTPS API running on https://localhost:${PORT}`);
+// Start HTTP server
+app.listen(PORT, () => {
+  console.log(`🚀 HTTP API running on http://localhost:${PORT}`);
 });
