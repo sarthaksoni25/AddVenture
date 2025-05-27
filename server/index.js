@@ -12,11 +12,10 @@ const PORT = process.env.PORT || 5000;
 const key = fs.readFileSync(path.resolve(__dirname, "../certs/key.pem"));
 const cert = fs.readFileSync(path.resolve(__dirname, "../certs/cert.pem"));
 
-// Middlewares
 const allowedOrigins = [
   "https://add-venture.xyz",
   "https://www.add-venture.xyz",
-  "http://localhost:5173", // optional, for local dev
+  "http://localhost:5173", // keep this if using local dev
 ];
 
 app.use(
@@ -25,12 +24,15 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("Not allowed by CORS: " + origin));
       }
     },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
 app.use(express.json()); // ✅ to parse JSON body
 app.use((err, req, res, next) => {
   console.error("💥 Global error caught:", err.stack || err);
