@@ -17,74 +17,85 @@ export default function App() {
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#1f1f1f" }}>
       {/* HEADER */}
-      {!user && (
-        <Header
-          style={{
-            backgroundColor: "#1f1f1f",
-            padding: "4rem 0 2rem", // more top/bottom space
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            textAlign: "center",
-            overflow: "visible",
-          }}
-        >
-          <img
-            src={Logo}
-            alt="AddVenture Logo"
-            style={{
-              height: "180px",
-              objectFit: "contain",
-              marginBottom: "1.5rem",
-            }}
-          />
-
-          <Typography.Title
-            level={2}
-            style={{
-              color: "#fff",
-              fontWeight: 500,
-              fontSize: "24px",
-              marginBottom: "1.25rem",
-            }}
-          >
-            Get your name on the leaderboard today!
-          </Typography.Title>
-
-          <div style={{ color: "#bbb", fontSize: "15px", lineHeight: 2 }}>
-            <div>🧠&nbsp;Fast-paced mental math</div>
-            <div>⏱&nbsp;60 seconds. 5 questions.</div>
-            <div>🏆&nbsp;Global leaderboard.</div>
-          </div>
-        </Header>
-      )}
-
-      {/* CONTENT */}
       <Content
         style={{
+          minHeight: "100vh",
+          backgroundColor: "#1f1f1f",
+          padding: "3rem 1rem",
           display: "flex",
-          flexDirection: user ? "row" : "column",
-          justifyContent: "center",
-          alignItems: user ? "flex-start" : "center",
-          gap: "2rem",
-          padding: "2rem",
-          color: "white",
-          minHeight: "calc(100vh - 80px)", // subtract header height
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
         {!user ? (
-          <UserLogin />
-        ) : (
           <>
-            {/* GAME AREA */}
+            {/* Top: Logo + Tagline */}
             <div
               style={{
-                flex: 1,
-                maxWidth: "500px",
-                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                gap: "1rem",
               }}
             >
-              {/* User Welcome Row */}
+              <img
+                src={Logo}
+                alt="AddVenture Logo"
+                style={{
+                  width: "100%",
+                  maxWidth: "300px",
+                  height: "auto",
+                }}
+              />
+
+              <Typography.Title
+                level={2}
+                style={{
+                  color: "#fff",
+                  fontSize: "24px",
+                  fontWeight: 500,
+                  marginTop: "1.5rem",
+                }}
+              >
+                Get your name on the leaderboard today!
+              </Typography.Title>
+
+              <div style={{ color: "#bbb", fontSize: "15px", lineHeight: 2 }}>
+                <div>🧠 Fast-paced mental math</div>
+                <div>⏱ 60 seconds. 5 questions.</div>
+                <div>🏆 Global leaderboard.</div>
+              </div>
+            </div>
+
+            {/* Middle: Login box */}
+            <div style={{ marginTop: "2rem" }}>
+              <UserLogin />
+            </div>
+
+            {/* Bottom Spacer to push login up on big screens */}
+            <div style={{ height: "2rem" }} />
+          </>
+        ) : (
+          // Game view (same as before)
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: "2rem",
+              maxWidth: "1200px",
+              width: "100%",
+            }}
+          >
+            {/* LEFT: Game Area */}
+            <div
+              style={{
+                flex: "1 1 400px",
+                minWidth: "300px",
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -96,11 +107,7 @@ export default function App() {
                 }}
               >
                 <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1rem",
-                  }}
+                  style={{ display: "flex", alignItems: "center", gap: "1rem" }}
                 >
                   {user.picture && (
                     <img
@@ -118,7 +125,6 @@ export default function App() {
                     Welcome, {user.name}
                   </Title>
                 </div>
-
                 <Button type="primary" ghost onClick={logout}>
                   Logout
                 </Button>
@@ -127,12 +133,11 @@ export default function App() {
               <Game history={history} setHistory={setHistory} />
             </div>
 
-            {/* SIDEBAR */}
+            {/* RIGHT: Sidebar */}
             <div
               style={{
-                flex: 1,
-                maxWidth: "420px",
-                width: "100%",
+                flex: "1 1 300px",
+                minWidth: "280px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "1.5rem",
@@ -141,7 +146,7 @@ export default function App() {
               <Leaderboard />
               <GameHistory history={history} />
             </div>
-          </>
+          </div>
         )}
       </Content>
     </Layout>
