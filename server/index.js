@@ -13,7 +13,24 @@ const key = fs.readFileSync(path.resolve(__dirname, "../certs/key.pem"));
 const cert = fs.readFileSync(path.resolve(__dirname, "../certs/cert.pem"));
 
 // Middlewares
-app.use(cors());
+const allowedOrigins = [
+  "https://add-venture.xyz",
+  "https://www.add-venture.xyz",
+  "http://localhost:5173", // optional, for local dev
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json()); // ✅ to parse JSON body
 app.use((err, req, res, next) => {
   console.error("💥 Global error caught:", err.stack || err);
