@@ -21,24 +21,44 @@ export default function App() {
         <Header
           style={{
             backgroundColor: "#1f1f1f",
-            padding: "2rem 0", // more vertical breathing room
+            padding: "4rem 0 2rem", // more top/bottom space
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
             alignItems: "center",
-            overflow: "visible", // allow any slight overflow (just in case)
+            textAlign: "center",
+            overflow: "visible",
           }}
         >
           <img
             src={Logo}
             alt="AddVenture Logo"
             style={{
-              height: "190px",
+              height: "180px",
               objectFit: "contain",
-              marginTop: "20rem", // fixes the crop
+              marginBottom: "1.5rem",
             }}
           />
+
+          <Typography.Title
+            level={2}
+            style={{
+              color: "#fff",
+              fontWeight: 500,
+              fontSize: "24px",
+              marginBottom: "1.25rem",
+            }}
+          >
+            Get your name on the leaderboard today!
+          </Typography.Title>
+
+          <div style={{ color: "#bbb", fontSize: "15px", lineHeight: 2 }}>
+            <div>🧠&nbsp;Fast-paced mental math</div>
+            <div>⏱&nbsp;60 seconds. 5 questions.</div>
+            <div>🏆&nbsp;Global leaderboard.</div>
+          </div>
         </Header>
       )}
+
       {/* CONTENT */}
       <Content
         style={{
