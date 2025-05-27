@@ -17,27 +17,28 @@ export default function App() {
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#1f1f1f" }}>
       {/* HEADER */}
-      <Header
-        style={{
-          backgroundColor: "#1f1f1f",
-          padding: "2rem 0", // more vertical breathing room
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          overflow: "visible", // allow any slight overflow (just in case)
-        }}
-      >
-        <img
-          src={logo}
-          alt="AddVenture Logo"
+      {!user && (
+        <Header
           style={{
-            height: "190px",
-            objectFit: "contain",
-            marginTop: "20rem", // fixes the crop
+            backgroundColor: "#1f1f1f",
+            padding: "2rem 0", // more vertical breathing room
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            overflow: "visible", // allow any slight overflow (just in case)
           }}
-        />
-      </Header>
-
+        >
+          <img
+            src={logo}
+            alt="AddVenture Logo"
+            style={{
+              height: "190px",
+              objectFit: "contain",
+              marginTop: "20rem", // fixes the crop
+            }}
+          />
+        </Header>
+      )}
       {/* CONTENT */}
       <Content
         style={{
