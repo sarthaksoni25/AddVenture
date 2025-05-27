@@ -50,7 +50,7 @@ export default function Game({ history, setHistory }) {
 
       if (user) {
         logGameStats({
-          guestId: user.guestId,
+          guestId: user.guestId, // now valid for both guests and Google users
           name: user.name,
           isGuest: user.isGuest,
           score: finalScore,

@@ -62,3 +62,4 @@ coverage/
 *.bak
 certs/*.pem
 /server/guest-logs.json
+adventure.db

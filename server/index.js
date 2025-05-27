@@ -1,4 +1,5 @@
 require("dotenv").config();
+const db = require("./db"); // if using require
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
@@ -13,7 +14,6 @@ const allowedOrigins = [
   "http://localhost:5173",
   "https://localhost:5173", // ✅ add this if using HTTPS on Vite
 ];
-
 
 app.use(
   cors({
@@ -78,36 +78,45 @@ app.get("/api/sums", (_, res) => {
 });
 
 app.post("/api/log", (req, res) => {
-  const logEntry = req.body;
-  const filePath = path.join(__dirname, "guest-logs.json");
-  let logs = [];
+  const {
+    guestId = null,
+    name = "Guest",
+    isGuest = true,
+    score = 0,
+    total = 0,
+    time = null,
+    timestamp = new Date().toISOString(),
+  } = req.body;
 
-  if (fs.existsSync(filePath)) {
-    const raw = fs.readFileSync(filePath);
-    logs = JSON.parse(raw);
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO guest_logs (guestId, name, isGuest, score, total, time, timestamp)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    stmt.run(
+      guestId,
+      name,
+      isGuest ? 1 : 0, // ✅ Boolean fix
+      score,
+      total,
+      time,
+      timestamp
+    );
+
+    res.status(200).json({ status: "ok" });
+  } catch (err) {
+    console.error("DB insert error:", err);
+    res.status(500).json({ error: "DB insert failed" });
   }
-
-  logs.push(logEntry);
-  fs.writeFileSync(filePath, JSON.stringify(logs, null, 2));
-  res.status(200).json({ status: "ok", received: logEntry });
 });
 
 app.get("/api/leaderboard", (req, res) => {
-  const filePath = path.join(__dirname, "guest-logs.json");
-
-  if (!fs.existsSync(filePath)) {
-    return res.json([]);
-  }
-
-  const logs = JSON.parse(fs.readFileSync(filePath));
+  const logs = db.prepare(`SELECT * FROM guest_logs`).all();
   const grouped = {};
 
   for (const entry of logs) {
-    if (
-      typeof entry.score !== "number" ||
-      !("guestId" in entry) ||
-      !("name" in entry)
-    )
+    if (typeof entry.score !== "number" || !entry.guestId || !entry.name)
       continue;
 
     const key = entry.isGuest ? entry.guestId : entry.name || "Unnamed";

@@ -36,6 +36,7 @@ export function UserProvider({ children }) {
         email: input.email,
         picture: input.picture,
         isGuest: false,
+        guestId: input.email, // ✅ use email as unique ID (or use sub field if available)
       };
 
       localStorage.setItem("user", JSON.stringify(userObj));
