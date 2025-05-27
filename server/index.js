@@ -1,19 +1,60 @@
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
+const https = require("https");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// HTTPS certs (relative to server directory)
+const key = fs.readFileSync(path.resolve(__dirname, "../certs/key.pem"));
+const cert = fs.readFileSync(path.resolve(__dirname, "../certs/cert.pem"));
+
+// Middlewares
 app.use(cors());
 app.use(express.json()); // ✅ to parse JSON body
+app.use((err, req, res, next) => {
+  console.error("💥 Global error caught:", err.stack || err);
+  res.status(500).json({ error: "Internal Server Error" });
+});
 
-// Health-check route
-app.get('/api/ping', (_, res) => res.json({ msg: 'pong' }));
+// Google OAuth
+const { OAuth2Client } = require("google-auth-library");
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
-// GET /api/sums → Random sums
-app.get('/api/sums', (_, res) => {
+// ✅ POST /api/auth → Google Login
+app.post("/api/auth", async (req, res) => {
+  console.log("🛬 Incoming Google login...");
+  const { credential } = req.body;
+
+  if (!credential) {
+    return res.status(400).json({ error: "Missing credential" });
+  }
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { name, email, picture } = payload;
+    console.log("✅ Verified user:", name, email);
+    res.json({ success: true, name, email, picture });
+  } catch (err) {
+    console.error("❌ Token verification failed:", err.message);
+    res.status(401).json({ error: "Invalid token" });
+  }
+});
+
+// ✅ GET /api/ping
+app.get("/api/ping", (_, res) => res.json({ msg: "pong" }));
+
+// ✅ GET /api/sums → Random sums
+app.get("/api/sums", (_, res) => {
   const sums = Array.from({ length: 5 }).map((_, idx) => {
     const a = Math.floor(Math.random() * 20) + 1;
     const b = Math.floor(Math.random() * 20) + 1;
@@ -22,41 +63,41 @@ app.get('/api/sums', (_, res) => {
   res.json(sums);
 });
 
-// ✅ NEW: POST /api/log → Save game stats
-app.post('/api/log', (req, res) => {
+// ✅ POST /api/log → Save game stats
+app.post("/api/log", (req, res) => {
   const logEntry = req.body;
-
-  const filePath = path.join(__dirname, 'guest-logs.json');
+  const filePath = path.join(__dirname, "guest-logs.json");
   let logs = [];
 
-  // Read existing logs
   if (fs.existsSync(filePath)) {
     const raw = fs.readFileSync(filePath);
     logs = JSON.parse(raw);
   }
 
-  // Append new entry
   logs.push(logEntry);
-
-  // Write back to file
   fs.writeFileSync(filePath, JSON.stringify(logs, null, 2));
 
-  res.status(200).json({ status: 'ok', received: logEntry });
+  res.status(200).json({ status: "ok", received: logEntry });
 });
-app.get('/api/leaderboard', (req, res) => {
-  const filePath = path.join(__dirname, 'guest-logs.json');
+
+// ✅ GET /api/leaderboard
+app.get("/api/leaderboard", (req, res) => {
+  const filePath = path.join(__dirname, "guest-logs.json");
 
   if (!fs.existsSync(filePath)) {
     return res.json([]);
   }
 
   const logs = JSON.parse(fs.readFileSync(filePath));
-
   const grouped = {};
 
   for (const entry of logs) {
-    // 🛡️ Skip if critical fields are missing
-    if (typeof entry.score !== 'number' || !('guestId' in entry) || !('name' in entry)) continue;
+    if (
+      typeof entry.score !== "number" ||
+      !("guestId" in entry) ||
+      !("name" in entry)
+    )
+      continue;
 
     const key = entry.isGuest ? entry.guestId : entry.name || "Unnamed";
 
@@ -90,7 +131,7 @@ app.get('/api/leaderboard', (req, res) => {
   res.json(leaderboard);
 });
 
-
-app.listen(PORT, () => {
-  console.log(`API running on ${PORT}`);
+// ✅ Start HTTPS server
+https.createServer({ key, cert }, app).listen(PORT, () => {
+  console.log(`🔐 HTTPS API running on https://localhost:${PORT}`);
 });

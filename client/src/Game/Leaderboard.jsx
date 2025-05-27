@@ -10,7 +10,7 @@ export default function Leaderboard() {
   const { user } = useUser();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/leaderboard`)
+    fetch(`${API_URL}/leaderboard`)
       .then((res) => res.json())
       .then(setData);
   }, []);

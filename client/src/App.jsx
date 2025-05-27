@@ -52,22 +52,47 @@ export default function App() {
                 width: "100%",
               }}
             >
+              {/* Header with avatar, welcome, logout */}
               <div
                 style={{
                   display: "flex",
-                  justifyContent: "space-between",
                   alignItems: "center",
+                  justifyContent: "space-between",
                   marginBottom: "1.5rem",
                   flexWrap: "wrap",
-                  gap: "0.5rem",
+                  gap: "1rem",
                 }}
               >
-                <Typography.Title
-                  level={4}
-                  style={{ margin: 0, color: "white" }}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                  }}
                 >
-                  Welcome, {user.name}
-                </Typography.Title>
+                  {user.picture && (
+                    <img
+                      src={user.picture}
+                      alt={user.name}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                  <Typography.Title
+                    level={4}
+                    style={{
+                      margin: 0,
+                      color: "white",
+                      lineHeight: "40px",
+                    }}
+                  >
+                    Welcome, {user.name}
+                  </Typography.Title>
+                </div>
 
                 <Button type="primary" ghost onClick={logout}>
                   Logout
@@ -81,7 +106,7 @@ export default function App() {
             <div
               style={{
                 flex: "1 1 100%",
-                maxWidth: "420px", // ✅ room for leaderboard width
+                maxWidth: "420px",
                 width: "100%",
                 display: "flex",
                 flexDirection: "column",
