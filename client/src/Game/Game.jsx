@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Typography, Button, Input, Space, Card } from "antd";
 import { useUser } from "../User/useUser";
 import { logGameStats } from "./logGameStats";
+import { motion, AnimatePresence } from "framer-motion";
 
 const QUESTION_MS = 5000;
 const STEP_MS = 50;
@@ -17,9 +18,10 @@ export default function Game({ history, setHistory }) {
   const [startedAt, setStartedAt] = useState(null);
   const [finished, setFinished] = useState(false);
   const { user } = useUser();
+  const inputRef = useRef(null);
 
+  /* ───────────────────────── API / GAME INIT ───────────────────────── */
   const loadQuestions = async () => {
-    console.log("API URL:", import.meta.env.VITE_API_URL);
     const qs = await fetch(`${API_URL}/sums`).then((r) => r.json());
     setQuestions(qs);
   };
@@ -32,8 +34,10 @@ export default function Game({ history, setHistory }) {
     setStartedAt(Date.now());
     setFinished(false);
     setMsLeft(QUESTION_MS);
+    setTimeout(() => inputRef.current?.focus(), 50);
   };
 
+  /* ───────────────────────── ADVANCE LOGIC ───────────────────────── */
   const advance = (given) => {
     const correct = questions[idx].answer;
     const newResults = [...results, { given, correct }];
@@ -50,7 +54,7 @@ export default function Game({ history, setHistory }) {
 
       if (user) {
         logGameStats({
-          guestId: user.guestId, // now valid for both guests and Google users
+          guestId: user.guestId,
           name: user.name,
           isGuest: user.isGuest,
           score: finalScore,
@@ -59,14 +63,11 @@ export default function Game({ history, setHistory }) {
         });
       }
 
-      setResults(newResults); // update full results
-      setFinished(true);
-
       setHistory((prev) => [
         {
           score: finalScore,
           total: questions.length,
-          time: ((Date.now() - startedAt) / 1000).toFixed(2),
+          time: elapsedTime,
           timestamp: new Date().toLocaleTimeString(),
         },
         ...prev,
@@ -79,6 +80,7 @@ export default function Game({ history, setHistory }) {
     }
   };
 
+  /* ───────────────────────── TIMERS ───────────────────────── */
   useEffect(() => {
     if (!questions.length || finished) return;
 
@@ -99,6 +101,15 @@ export default function Game({ history, setHistory }) {
     };
   }, [idx, questions.length, finished]);
 
+  /* ───────────────────────── AUTO‑FOCUS ON NEW QUESTION ───────────────────────── */
+  useEffect(() => {
+    if (!finished) {
+      const t = setTimeout(() => inputRef.current?.focus(), 60);
+      return () => clearTimeout(t);
+    }
+  }, [idx, finished]);
+
+  /* ───────────────────────── DERIVED VALUES ───────────────────────── */
   const score = results.filter((r) => Number(r.given) === r.correct).length;
   const elapsed =
     finished && startedAt ? ((Date.now() - startedAt) / 1000).toFixed(2) : null;
@@ -114,12 +125,7 @@ export default function Game({ history, setHistory }) {
   if (finished) {
     return (
       <Card
-        style={{
-          textAlign: "center",
-          backgroundColor: "#1f1f1f",
-          color: "white",
-          padding: "1.5rem", // add more breathing room
-        }}
+        style={{ textAlign: "center", backgroundColor: "#1f1f1f", color: "white", padding: "1.5rem" }}
         bodyStyle={{ padding: "2rem" }}
       >
         <Title level={3}>Done!</Title>
@@ -129,11 +135,7 @@ export default function Game({ history, setHistory }) {
           ✅ {score} / {questions.length}
         </Text>
         <br />
-        <Button
-          type="primary"
-          onClick={startGame}
-          style={{ marginTop: "1rem" }}
-        >
+        <Button type="primary" onClick={startGame} style={{ marginTop: "1rem" }}>
           Play again
         </Button>
       </Card>
@@ -142,58 +144,68 @@ export default function Game({ history, setHistory }) {
 
   const { a, b } = questions[idx];
 
+  const variants = {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -10 },
+  };
+
   return (
-    <Card
-      style={{
-        textAlign: "center",
-        backgroundColor: "#1f1f1f",
-        color: "white",
-      }}
-      bodyStyle={{ padding: "2rem" }}
-    >
-      <Space direction="vertical" size="large" align="center">
-        <Title level={4}>⏳ {(msLeft / 1000).toFixed(2)} s</Title>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            advance(Number(answer));
-          }}
+    <Card style={{ textAlign: "center", backgroundColor: "#1f1f1f", color: "white" }} bodyStyle={{ padding: "2rem" }}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={idx}
+          variants={variants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.25 }}
+          onAnimationComplete={() => setTimeout(() => inputRef.current?.focus(), 20)}
         >
-          <Space>
-            <Text strong style={{ fontSize: "1.4rem" }}>
-              {a} + {b} =
-            </Text>
-            <Input
-              type="number"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              style={{
-                width: 100,
-                fontSize: "1.2rem", // bigger for touch
-                backgroundColor: "#2a2a2a",
-                color: "white",
-                border: "1px solid #555",
-                borderRadius: "4px",
+          <Space direction="vertical" size="large" align="center">
+            <Title level={4}>⏳ {(msLeft / 1000).toFixed(2)} s</Title>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                advance(Number(answer));
               }}
-              inputMode="numeric" // helps on mobile
-              pattern="[0-9]*"
-            />
+            >
+              <Space>
+                <Text strong style={{ fontSize: "1.4rem" }}>
+                  {a} + {b} =
+                </Text>
+                <Input
+                  ref={inputRef}
+                  type="number"
+                  value={answer}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setAnswer(val);
+                    if (val !== "" && Number(val) === questions[idx].answer) {
+                      setTimeout(() => advance(Number(val)), 120);
+                    }
+                  }}
+                  style={{
+                    width: 100,
+                    fontSize: "1.2rem",
+                    backgroundColor: "#2a2a2a",
+                    color: "white",
+                    border: "1px solid #555",
+                    borderRadius: "4px",
+                  }}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+              </Space>
+              <br />
+              <Button type="primary" htmlType="submit" style={{ marginTop: "1rem" }}>
+                Next
+              </Button>
+            </form>
+            <Text type="secondary">Question {idx + 1} / {questions.length}</Text>
           </Space>
-          <br />
-          <Button
-            type="primary"
-            htmlType="submit"
-            style={{ marginTop: "1rem" }}
-          >
-            Next
-          </Button>
-        </form>
-
-        <Text type="secondary">
-          Question {idx + 1} / {questions.length}
-        </Text>
-      </Space>
+        </motion.div>
+      </AnimatePresence>
     </Card>
   );
 }
