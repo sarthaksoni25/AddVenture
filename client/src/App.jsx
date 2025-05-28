@@ -12,8 +12,8 @@ const { Title } = Typography;
 
 export default function App() {
   const { user, logout } = useUser();
-  const [history, setHistory] = useState([]);
-
+  const [refreshKey, setRefreshKey] = useState(0);
+  const bumpRefresh = () => setRefreshKey((k) => k + 1);
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#1f1f1f" }}>
       {/* HEADER */}
@@ -130,7 +130,7 @@ export default function App() {
                 </Button>
               </div>
 
-              <Game history={history} setHistory={setHistory} />
+              <Game onGameEnd={bumpRefresh} />
             </div>
 
             {/* RIGHT: Sidebar */}
@@ -143,8 +143,8 @@ export default function App() {
                 gap: "1.5rem",
               }}
             >
-              <Leaderboard />
-              <GameHistory history={history} />
+              <Leaderboard refreshKey={refreshKey} />
+              <GameHistory refreshKey={refreshKey} />
             </div>
           </div>
         )}

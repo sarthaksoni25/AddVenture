@@ -9,7 +9,7 @@ const STEP_MS = 50;
 const API_URL = import.meta.env.VITE_API_URL;
 const { Title, Text } = Typography;
 
-export default function Game({ history, setHistory }) {
+export default function Game({ onGameEnd }) {
   /* ───────────────────────── STATE ───────────────────────── */
   const [questions, setQuestions] = useState([]);
   const [idx, setIdx] = useState(0);
@@ -18,6 +18,10 @@ export default function Game({ history, setHistory }) {
   const [results, setResults] = useState([]);
   const [startedAt, setStartedAt] = useState(null);
   const [finished, setFinished] = useState(false);
+
+  // ⏳ Countdown overlay
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [countdown, setCountdown] = useState(3); // 3 → 2 → 1 → "Go"
 
   const { user } = useUser();
   const inputRef = useRef(null);
@@ -33,10 +37,33 @@ export default function Game({ history, setHistory }) {
     setIdx(0);
     setAnswer("");
     setResults([]);
-    setStartedAt(Date.now());
     setFinished(false);
     setMsLeft(QUESTION_MS);
+    // kick off countdown
+    setCountdown(3);
+    setShowCountdown(true);
   };
+
+  /* ───────────────────────── COUNTDOWN LOGIC ───────────────────────── */
+  useEffect(() => {
+    if (!showCountdown) return;
+
+    if (countdown === "Go") {
+      const t = setTimeout(() => {
+        setShowCountdown(false);
+        setStartedAt(Date.now());
+      }, 600); // brief flash of "Go"
+      return () => clearTimeout(t);
+    }
+
+    if (countdown > 0) {
+      const t = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(t);
+    }
+
+    // when countdown hits 0 switch to "Go"
+    if (countdown === 0) setCountdown("Go");
+  }, [showCountdown, countdown]);
 
   /* ───────────────────────── ADVANCE LOGIC ───────────────────────── */
   const advance = (given) => {
@@ -44,7 +71,9 @@ export default function Game({ history, setHistory }) {
     const newResults = [...results, { given, correct }];
 
     if (idx + 1 >= questions.length) {
-      const finalScore = newResults.filter((r) => Number(r.given) === r.correct).length;
+      const finalScore = newResults.filter(
+        (r) => Number(r.given) === r.correct
+      ).length;
       setResults(newResults);
       setFinished(true);
 
@@ -58,18 +87,10 @@ export default function Game({ history, setHistory }) {
           score: finalScore,
           total: questions.length,
           time: elapsedTime,
+        }).finally(() => {
+          if (typeof onGameEnd === "function") onGameEnd();
         });
       }
-
-      setHistory((prev) => [
-        {
-          score: finalScore,
-          total: questions.length,
-          time: elapsedTime,
-          timestamp: new Date().toLocaleTimeString(),
-        },
-        ...prev,
-      ]);
     } else {
       setResults(newResults);
       setIdx((i) => i + 1);
@@ -80,7 +101,7 @@ export default function Game({ history, setHistory }) {
 
   /* ───────────────────────── TIMERS ───────────────────────── */
   useEffect(() => {
-    if (!questions.length || finished) return;
+    if (!questions.length || finished || showCountdown) return;
 
     const start = Date.now();
     const tick = setInterval(() => {
@@ -97,21 +118,22 @@ export default function Game({ history, setHistory }) {
       clearInterval(tick);
       clearTimeout(to);
     };
-  }, [idx, questions.length, finished]);
+  }, [idx, questions.length, finished, showCountdown]);
 
   /* ───────────────────────── KEEP FOCUS ───────────────────────── */
   useLayoutEffect(() => {
-    if (!finished) {
+    if (!finished && !showCountdown) {
       inputRef.current?.focus({ preventScroll: true });
     }
-  }, [idx, finished]);
+  }, [idx, finished, showCountdown]);
 
   /* ───────────────────────── DERIVED VALUES ───────────────────────── */
   const score = results.filter((r) => Number(r.given) === r.correct).length;
-  const elapsed = finished && startedAt ? ((Date.now() - startedAt) / 1000).toFixed(2) : null;
+  const elapsed =
+    finished && startedAt ? ((Date.now() - startedAt) / 1000).toFixed(2) : null;
 
   /* ───────────────────────── UI: NOT STARTED ───────────────────────── */
-  if (!questions.length) {
+  if (!questions.length && !showCountdown) {
     return (
       <Button type="primary" onClick={startGame}>
         Start
@@ -119,16 +141,46 @@ export default function Game({ history, setHistory }) {
     );
   }
 
+  /* ───────────────────────── UI: COUNTDOWN ───────────────────────── */
+  if (showCountdown) {
+    return (
+      <Card
+        style={{
+          textAlign: "center",
+          backgroundColor: "#1f1f1f",
+          color: "white",
+          padding: "2rem",
+        }}
+      >
+        <Title level={2}>{countdown}</Title>
+      </Card>
+    );
+  }
+
   /* ───────────────────────── UI: FINISHED ───────────────────────── */
   if (finished) {
     return (
-      <Card style={{ textAlign: "center", backgroundColor: "#1f1f1f", color: "white", padding: "1.5rem" }} bodyStyle={{ padding: "2rem" }}>
+      <Card
+        style={{
+          textAlign: "center",
+          backgroundColor: "#1f1f1f",
+          color: "white",
+          padding: "1.5rem",
+        }}
+        bodyStyle={{ padding: "2rem" }}
+      >
         <Title level={3}>Done!</Title>
         <Text>⏱️ {elapsed}s total</Text>
         <br />
-        <Text>✅ {score} / {questions.length}</Text>
+        <Text>
+          ✅ {score} / {questions.length}
+        </Text>
         <br />
-        <Button type="primary" onClick={startGame} style={{ marginTop: "1rem" }}>
+        <Button
+          type="primary"
+          onClick={startGame}
+          style={{ marginTop: "1rem" }}
+        >
           Play again
         </Button>
       </Card>
@@ -144,11 +196,25 @@ export default function Game({ history, setHistory }) {
   };
 
   return (
-    <Card style={{ textAlign: "center", backgroundColor: "#1f1f1f", color: "white" }} bodyStyle={{ padding: "2rem" }}>
+    <Card
+      style={{
+        textAlign: "center",
+        backgroundColor: "#1f1f1f",
+        color: "white",
+      }}
+      bodyStyle={{ padding: "2rem" }}
+    >
       <Space direction="vertical" size="large" align="center">
         {/* ──────────── Question & Timer (animated) ──────────── */}
         <AnimatePresence mode="wait">
-          <motion.div key={idx} variants={variants} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.25 }}>
+          <motion.div
+            key={idx}
+            variants={variants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={{ duration: 0.25 }}
+          >
             <Title level={4}>⏳ {(msLeft / 1000).toFixed(2)} s</Title>
             <Text strong style={{ fontSize: "1.4rem" }}>
               {a} + {b} =
@@ -190,12 +256,18 @@ export default function Game({ history, setHistory }) {
             />
           </Space>
           <br />
-          <Button type="primary" htmlType="submit" style={{ marginTop: "1rem" }}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            style={{ marginTop: "1rem" }}
+          >
             Next
           </Button>
         </form>
 
-        <Text type="secondary">Question {idx + 1} / {questions.length}</Text>
+        <Text type="secondary">
+          Question {idx + 1} / {questions.length}
+        </Text>
       </Space>
     </Card>
   );

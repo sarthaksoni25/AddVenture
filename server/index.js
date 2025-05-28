@@ -1,5 +1,4 @@
 require("dotenv").config();
-const db = require("./db"); // if using require
 const express = require("express");
 const cors = require("cors");
 const fs = require("fs");
@@ -7,6 +6,7 @@ const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const { db, upsertUser, insertGame } = require("./db");
 
 const allowedOrigins = [
   "https://add-venture.xyz",
@@ -76,6 +76,9 @@ app.get("/api/sums", (_, res) => {
   });
   res.json(sums);
 });
+/* ------------------------------------------------------------------ *
+ * POST /api/log  → upsert user, then store one game result
+ * ------------------------------------------------------------------ */
 
 app.post("/api/log", (req, res) => {
   const {
@@ -88,21 +91,32 @@ app.post("/api/log", (req, res) => {
     timestamp = new Date().toISOString(),
   } = req.body;
 
-  try {
-    const stmt = db.prepare(`
-      INSERT INTO guest_logs (guestId, name, isGuest, score, total, time, timestamp)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
+  if (!guestId) {
+    return res.status(400).json({ error: "guestId required" });
+  }
 
-    stmt.run(
-      guestId,
-      name,
-      isGuest ? 1 : 0, // ✅ Boolean fix
+  try {
+    db.transaction(({ user, score, total, time, timestamp }) => {
+      upsertUser.run({
+        guestId: user.guestId,
+        name: user.name,
+        isGuest: user.isGuest ? 1 : 0,
+      });
+
+      insertGame.run({
+        guestId: user.guestId,
+        score,
+        total,
+        time: parseFloat(time),
+        timestamp,
+      });
+    })({
+      user: { guestId, name, isGuest },
       score,
       total,
       time,
-      timestamp
-    );
+      timestamp,
+    });
 
     res.status(200).json({ status: "ok" });
   } catch (err) {
@@ -111,44 +125,65 @@ app.post("/api/log", (req, res) => {
   }
 });
 
+/* ------------------------------------------------------------------ *
+ * GET /api/leaderboard  → best score & fastest time per user
+ * ------------------------------------------------------------------ */
 app.get("/api/leaderboard", (req, res) => {
-  const logs = db.prepare(`SELECT * FROM guest_logs`).all();
-  const grouped = {};
+  const rows = db
+    .prepare(
+      `
+    SELECT u.guestId,
+           u.name,
+           u.isGuest,
+           l.score       AS bestScore,
+           l.total,
+           l.time,
+           l.timestamp
+    FROM users u
+    JOIN game_logs l
+      ON u.guestId = l.guestId
+    WHERE (l.score, l.time) IN (
+      SELECT score, MIN(time)
+      FROM game_logs
+      WHERE guestId = u.guestId
+        AND score = (
+          SELECT MAX(score)
+          FROM game_logs
+          WHERE guestId = u.guestId
+        )
+    )
+    GROUP BY u.guestId
+    ORDER BY bestScore DESC, l.time ASC
+    LIMIT 10;
+    `
+    )
+    .all();
 
-  for (const entry of logs) {
-    if (typeof entry.score !== "number" || !entry.guestId || !entry.name)
-      continue;
+  res.json(rows.map((r) => ({ ...r, isGuest: !!r.isGuest })));
+});
 
-    const key = entry.isGuest ? entry.guestId : entry.name || "Unnamed";
+/* ------------------------------------------------------------------ *
+ * GET /api/history  → get history
+ * ------------------------------------------------------------------ */
+// server/index.js  (after /api/leaderboard)
+app.get("/api/history/:guestId", (req, res) => {
+  const { guestId } = req.params;
 
-    if (!grouped[key]) {
-      grouped[key] = {
-        name: entry.name || "Guest",
-        isGuest: entry.isGuest ?? true,
-        guestId: entry.guestId,
-        bestScore: entry.score,
-        total: entry.total,
-        time: entry.time,
-        timestamp: entry.timestamp,
-      };
-    } else {
-      if (entry.score > grouped[key].bestScore) {
-        grouped[key] = {
-          ...grouped[key],
-          bestScore: entry.score,
-          total: entry.total,
-          time: entry.time,
-          timestamp: entry.timestamp,
-        };
-      }
-    }
-  }
+  if (!guestId) return res.status(400).json({ error: "guestId required" });
 
-  const leaderboard = Object.values(grouped)
-    .sort((a, b) => b.bestScore - a.bestScore)
-    .slice(0, 10);
+  const rows = db
+    .prepare(
+      /* sql */ `
+    SELECT score, total, time, timestamp
+    FROM   game_logs
+    WHERE  guestId = ?
+    ORDER  BY timestamp DESC
+    LIMIT  5;              -- latest 50 rounds
+  `
+    )
+    .all(guestId);
 
-  res.json(leaderboard);
+  res.json(rows);
 });
 
 // Start HTTP server

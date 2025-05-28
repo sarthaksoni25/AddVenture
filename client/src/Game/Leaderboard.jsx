@@ -5,7 +5,7 @@ import { useUser } from "../User/useUser";
 const API_URL = import.meta.env.VITE_API_URL;
 const { Text } = Typography;
 
-export default function Leaderboard() {
+export default function Leaderboard(refreshKey) {
   const [data, setData] = useState([]);
   const { user } = useUser();
 
@@ -13,7 +13,7 @@ export default function Leaderboard() {
     fetch(`${API_URL}/leaderboard`)
       .then((res) => res.json())
       .then(setData);
-  }, []);
+  }, [refreshKey]);
 
   return (
     <Card
@@ -21,8 +21,8 @@ export default function Leaderboard() {
       style={{
         backgroundColor: "#1f1f1f",
         color: "white",
-        width: "100%",            // ⬅️ full width container
-        maxWidth: "420px",        // ⬅️ looks great on desktop
+        width: "100%", // ⬅️ full width container
+        maxWidth: "420px", // ⬅️ looks great on desktop
         marginBottom: "1rem",
       }}
       bodyStyle={{ padding: "1rem" }}
@@ -55,7 +55,7 @@ export default function Leaderboard() {
                 <Text style={{ color: "white" }}>
                   #{index + 1} • {item.name}
                 </Text>
-                {item.isGuest && (
+                {Boolean(item.isGuest) && (
                   <Tag color="blue" style={{ margin: 0 }}>
                     Guest
                   </Tag>
