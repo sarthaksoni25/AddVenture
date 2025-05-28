@@ -1,0 +1,11 @@
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server/adventure.db:/app/adventure.db 
+    environment:
+      - PORT=5000
