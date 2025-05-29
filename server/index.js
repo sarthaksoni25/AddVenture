@@ -186,6 +186,39 @@ app.get("/api/history/:guestId", (req, res) => {
   res.json(rows);
 });
 
+/* ------------------------------------------------------------------ *
+ * POST /api/rename  → change a user’s display name
+ * Body: { guestId: "abc123", newName: "QuickAdder" }
+ * ------------------------------------------------------------------ */
+const renameUser = db.prepare(`
+  UPDATE users
+  SET    name = ?
+  WHERE  guestId = ?;
+`);
+
+app.post("/api/rename", (req, res) => {
+  const { guestId, newName = "" } = req.body || {};
+
+  // basic input checks
+  if (!guestId || !newName.trim())
+    return res.status(400).json({ error: "guestId and newName required" });
+  if (!/^[a-zA-Z0-9_-]{3,15}$/.test(newName))
+    return res
+      .status(400)
+      .json({ error: "Name must be 3-15 chars, a-z, 0-9, _ or -" });
+
+  try {
+    const info = renameUser.run(newName.trim(), guestId);
+    if (info.changes === 0)
+      return res.status(404).json({ error: "guestId not found" });
+
+    res.json({ status: "ok", newName });
+  } catch (err) {
+    console.error("Rename error:", err);
+    res.status(500).json({ error: "Rename failed" });
+  }
+});
+
 // Start HTTP server
 app.listen(PORT, () => {
   console.log(`🚀 HTTP API running on http://localhost:${PORT}`);

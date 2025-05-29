@@ -12,31 +12,40 @@ export function UserProvider({ children }) {
 
   const login = (input) => {
     if (typeof input === "string") {
-      // Guest login
       const isGuest = input === "Guest";
-      const guestId =
-        isGuest && (localStorage.getItem("guestId") || generateGuestId());
 
-      if (isGuest && !localStorage.getItem("guestId")) {
+      // Get existing guestId or create new
+      let guestId = localStorage.getItem("guestId");
+      if (!guestId) {
+        guestId = generateGuestId();
         localStorage.setItem("guestId", guestId);
       }
 
+      // Look up prior user in case of renamed guest
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const isSameGuest = storedUser?.guestId === guestId;
+
+      const name =
+        isSameGuest && storedUser?.name
+          ? storedUser.name
+          : `Guest_${guestId.slice(-5)}`;
+
       const userObj = {
-        name: isGuest ? `Guest_${guestId.slice(-5)}` : input,
+        name,
         isGuest,
         guestId,
       };
 
+      // Always persist current user object
       localStorage.setItem("user", JSON.stringify(userObj));
       setUser(userObj);
     } else if (typeof input === "object") {
-      // Google user object
       const userObj = {
         name: input.name,
         email: input.email,
         picture: input.picture,
         isGuest: false,
-        guestId: input.email, // ✅ use email as unique ID (or use sub field if available)
+        guestId: input.email,
       };
 
       localStorage.setItem("user", JSON.stringify(userObj));
@@ -45,7 +54,6 @@ export function UserProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("user");
     setUser(null);
 
     // Optional: clear Google login button from DOM
@@ -54,7 +62,7 @@ export function UserProvider({ children }) {
   };
 
   return (
-    <UserContext.Provider value={{ user, login, logout }}>
+    <UserContext.Provider value={{ user, login, logout, setUser }}>
       {children}
     </UserContext.Provider>
   );
