@@ -18,7 +18,7 @@ export default function Game({ onGameEnd }) {
   const [results, setResults] = useState([]);
   const [startedAt, setStartedAt] = useState(null);
   const [finished, setFinished] = useState(false);
-
+  const [elapsed, setElapsed] = useState(null);
   // ⏳ Countdown overlay
   const [showCountdown, setShowCountdown] = useState(false);
   const [countdown, setCountdown] = useState(3); // 3 → 2 → 1 → "Go"
@@ -75,9 +75,10 @@ export default function Game({ onGameEnd }) {
         (r) => Number(r.given) === r.correct
       ).length;
       setResults(newResults);
+      const end = Date.now();
+      const elapsedTime = ((end - startedAt) / 1000).toFixed(2);
+      setElapsed(elapsedTime);
       setFinished(true);
-
-      const elapsedTime = ((Date.now() - startedAt) / 1000).toFixed(2);
 
       if (user) {
         logGameStats({
@@ -129,8 +130,6 @@ export default function Game({ onGameEnd }) {
 
   /* ───────────────────────── DERIVED VALUES ───────────────────────── */
   const score = results.filter((r) => Number(r.given) === r.correct).length;
-  const elapsed =
-    finished && startedAt ? ((Date.now() - startedAt) / 1000).toFixed(2) : null;
 
   /* ───────────────────────── UI: NOT STARTED ───────────────────────── */
   if (!questions.length && !showCountdown) {
@@ -144,14 +143,7 @@ export default function Game({ onGameEnd }) {
   /* ───────────────────────── UI: COUNTDOWN ───────────────────────── */
   if (showCountdown) {
     return (
-      <Card
-        style={{
-          textAlign: "center",
-          backgroundColor: "#1f1f1f",
-          color: "white",
-          padding: "2rem",
-        }}
-      >
+      <Card className={styles.card}>
         <Title level={2}>{countdown}</Title>
       </Card>
     );
@@ -160,15 +152,7 @@ export default function Game({ onGameEnd }) {
   /* ───────────────────────── UI: FINISHED ───────────────────────── */
   if (finished) {
     return (
-      <Card
-        style={{
-          textAlign: "center",
-          backgroundColor: "#1f1f1f",
-          color: "white",
-          padding: "1.5rem",
-        }}
-        bodyStyle={{ padding: "2rem" }}
-      >
+      <Card className={styles.card} bodyStyle={{ padding: "2rem" }}>
         <Title level={3}>Done!</Title>
         <Text>⏱️ {elapsed}s total</Text>
         <br />
@@ -179,7 +163,7 @@ export default function Game({ onGameEnd }) {
         <Button
           type="primary"
           onClick={startGame}
-          style={{ marginTop: "1rem" }}
+          className={styles.centeredButton}
         >
           Play again
         </Button>
@@ -231,7 +215,7 @@ export default function Game({ onGameEnd }) {
         >
           <Space>
             <Input
-              className={styles.noSpin}
+              className={`${styles.answerBox} ${styles.noSpin}`}
               ref={inputRef}
               autoFocus
               type="number"
@@ -243,14 +227,6 @@ export default function Game({ onGameEnd }) {
                   setTimeout(() => advance(Number(val)), 120);
                 }
               }}
-              style={{
-                width: 100,
-                fontSize: "1.2rem",
-                backgroundColor: "#2a2a2a",
-                color: "white",
-                border: "1px solid #555",
-                borderRadius: "4px",
-              }}
               inputMode="numeric"
               pattern="[0-9]*"
             />
@@ -259,7 +235,7 @@ export default function Game({ onGameEnd }) {
           <Button
             type="primary"
             htmlType="submit"
-            style={{ marginTop: "1rem" }}
+            className={styles.centeredButton}
           >
             Next
           </Button>

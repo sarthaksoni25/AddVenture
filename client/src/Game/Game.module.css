@@ -1,4 +1,30 @@
-/* 👇 Hide arrows in number input */
+/* ───── Game.module.css ───── */
+
+.card {
+  text-align: center;
+  background-color: #1f1f1f;
+  color: white;
+}
+
+.cardBody {
+  padding: 2rem;
+}
+
+.timer {
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+
+.answerBox {
+  width: 100px;
+  font-size: 1.2rem;
+  background-color: #2a2a2a;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+}
+
+/* Hide number arrows (browser defaults) */
 .noSpin::-webkit-outer-spin-button,
 .noSpin::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -6,5 +32,9 @@
 }
 
 .noSpin[type='number'] {
-  -moz-appearance: textfield; /* Firefox */
+  -moz-appearance: textfield;
+}
+
+.centeredButton {
+  margin-top: 1rem;
 }
