@@ -1,0 +1,10 @@
+/* 👇 Hide arrows in number input */
+.noSpin::-webkit-outer-spin-button,
+.noSpin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.noSpin[type='number'] {
+  -moz-appearance: textfield; /* Firefox */
+}

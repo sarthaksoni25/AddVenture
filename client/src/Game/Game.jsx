@@ -3,7 +3,7 @@ import { Typography, Button, Input, Space, Card } from "antd";
 import { useUser } from "../User/useUser";
 import { logGameStats } from "./logGameStats";
 import { motion, AnimatePresence } from "framer-motion";
-
+import styles from "./Game.module.css";
 const QUESTION_MS = 5000;
 const STEP_MS = 50;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -231,6 +231,7 @@ export default function Game({ onGameEnd }) {
         >
           <Space>
             <Input
+              className={styles.noSpin}
               ref={inputRef}
               autoFocus
               type="number"
@@ -239,7 +240,6 @@ export default function Game({ onGameEnd }) {
                 const val = e.target.value;
                 setAnswer(val);
                 if (val !== "" && Number(val) === questions[idx].answer) {
-                  // small delay so the user sees their correct input
                   setTimeout(() => advance(Number(val)), 120);
                 }
               }}
