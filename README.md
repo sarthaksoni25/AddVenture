@@ -119,7 +119,7 @@ AddVenture/
 | Database | SQLite (file‑based) → MySQL (planned) |
 | CI/CD    | GitHub Actions                        |
 | Infra    | AWS S3 · EC2 · CloudFront · ACM       |
-| Auth     | Anonymous + guestId (localStorage)    |
+| Auth     | Google Auth + guestId (localStorage)    |
 
 ---
 
