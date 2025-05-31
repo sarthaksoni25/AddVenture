@@ -1,20 +1,28 @@
 // db.js
 const Database = require("better-sqlite3");
 const path = require("path");
+const dbPath =
+  process.env.NODE_ENV === "test"
+    ? ":memory:"
+    : path.join(__dirname, "adventure.db");
 
-const db = new Database(path.join(__dirname, "adventure.db"));
+const db = new Database(dbPath);
+console.log('📦 Connected to database:', dbPath);
 db.pragma("foreign_keys = ON");
 
 /* ─────────────────────── TABLES ─────────────────────── */
-db.prepare(/* sql */`
+db.prepare(
+  /* sql */ `
   CREATE TABLE IF NOT EXISTS users (
     guestId TEXT PRIMARY KEY,
     name    TEXT NOT NULL,
     isGuest INTEGER NOT NULL          -- 0 | 1
   );
-`).run();
+`
+).run();
 
-db.prepare(/* sql */`
+db.prepare(
+  /* sql */ `
   CREATE TABLE IF NOT EXISTS game_logs (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     guestId   TEXT    NOT NULL,
@@ -24,10 +32,11 @@ db.prepare(/* sql */`
     timestamp TEXT    NOT NULL,
     FOREIGN KEY (guestId) REFERENCES users (guestId)
   );
-`).run();
+`
+).run();
 
 /* ──────────────────── PREPARED STMTs ─────────────────── */
-const upsertUser = db.prepare(/* sql */`
+const upsertUser = db.prepare(/* sql */ `
   INSERT INTO users (guestId, name, isGuest)
   VALUES (@guestId, @name, @isGuest)
   ON CONFLICT (guestId) DO UPDATE SET
@@ -35,7 +44,7 @@ const upsertUser = db.prepare(/* sql */`
     isGuest = excluded.isGuest;
 `);
 
-const insertGame = db.prepare(/* sql */`
+const insertGame = db.prepare(/* sql */ `
   INSERT INTO game_logs (guestId, score, total, time, timestamp)
   VALUES      (@guestId, @score, @total, @time, @timestamp);
 `);

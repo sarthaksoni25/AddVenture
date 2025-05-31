@@ -10,14 +10,29 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  test-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # or whatever version you're using
+
+      - name: Install backend dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run backend tests
+        working-directory: server
+        run: npm run test
+
+      # ✅ If tests pass, only then deploy
       - name: SSH into EC2 and deploy Docker
+        if: success()
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -33,5 +48,9 @@ jobs:
             # rebuild and restart backend
             docker compose -f compose.yml up -d --build
 
-            # prune dangling images to save space (optional)
+            # prune dangling images to save space
             docker image prune -f
+          script_stop: true
+          debug: false
+        envs_format: "export"
+        shell: bash
