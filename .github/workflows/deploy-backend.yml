@@ -20,7 +20,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # or whatever version you're using
+          node-version: '20'
 
       - name: Install backend dependencies
         working-directory: server
@@ -30,7 +30,6 @@ jobs:
         working-directory: server
         run: npm run test
 
-      # ✅ If tests pass, only then deploy
       - name: SSH into EC2 and deploy Docker
         if: success()
         uses: appleboy/ssh-action@v1.0.0
@@ -39,18 +38,10 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/AddVenture
-            git pull origin main
-
-            # stop any old containers
-            docker compose -f compose.yml down
-
-            # rebuild and restart backend
-            docker compose -f compose.yml up -d --build
-
-            # prune dangling images to save space
-            docker image prune -f
-          script_stop: true
-          debug: false
-        envs_format: "export"
-        shell: bash
+            bash -c "
+              cd /home/ec2-user/AddVenture
+              git pull origin main
+              docker compose -f compose.yml down
+              docker compose -f compose.yml up -d --build
+              docker image prune -f
+            " 2>&1
