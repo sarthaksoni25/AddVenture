@@ -69,7 +69,15 @@
 
 ### Backlog / Ideas
 
-- [ ] Multiplayer tournament mode
+Multiplayer tournament mode
 - [ ] In-game power-ups store
 - [ ] A/B test harder puzzle types
 - [ ] Mobile app wrapper (Capacitor/React Native)
+
+### Infra update roadmap
+- [ ] Add Redis service to compose.yml
+- [ ] Integrate Redis caching in server/
+- [ ] docker compose up → measure speed
+- [ ] kompose convert and kubectl apply
+- [ ] Create Terraform root module for S3 + EKS
+- [ ] Move k8s manifests into Terraform kubernetes_manifest resources
