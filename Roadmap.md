@@ -75,3 +75,10 @@
 - [ ] Mobile app wrapper (Capacitor/React Native)
 
 ### Add infra to-dos
+
+- [ ] Add Redis service to compose.yml
+- [ ] Integrate Redis caching in server/
+- [ ] docker compose up → measure speed
+- [ ] kompose convert and kubectl apply 
+- [ ] Create Terraform root module for S3 + EKS
+- [ ] Move k8s manifests into Terraform kubernetes_manifest resources
