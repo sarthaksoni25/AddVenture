@@ -73,3 +73,5 @@
 - [ ] In-game power-ups store
 - [ ] A/B test harder puzzle types
 - [ ] Mobile app wrapper (Capacitor/React Native)
+
+### Add infra to-dos
