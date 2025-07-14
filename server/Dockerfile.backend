@@ -10,7 +10,7 @@ RUN npm ci --only=production   # uses package-lock.json for parity
 # Copy the rest of the source (small thanks to .dockerignore)
 COPY . .
 
-ENV PORT=5001
-EXPOSE 5001
+ENV PORT=5000
+EXPOSE 5000
 
 CMD ["node", "index.js"]

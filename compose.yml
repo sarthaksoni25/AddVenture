@@ -4,8 +4,8 @@ services:
       context: ./server
       dockerfile: Dockerfile.backend
     ports:
-      - "50001:5001"  # Host:Container
+      - "5000:5000"
     volumes:
-      - ./server/adventure.db:/app/adventure.db
+      - ./server/adventure.db:/app/adventure.db 
     environment:
-      - PORT=5001
+      - PORT=5000
