@@ -120,41 +120,43 @@ app.post("/api/log", (req, res) => {
 
 app.get("/api/leaderboard", (req, res) => {
   const rows = db.prepare(`
-    /* 1️⃣  best_score: one row per user with their max score */
-    WITH best_score AS (
-      SELECT guestId, MAX(score) AS bestScore
-      FROM game_logs
-      GROUP BY guestId
-    ),
-    /* 2️⃣  best_round: tie‑break with MIN(time) for that score */
-    best_round AS (
-      SELECT g.*
-      FROM game_logs g
-      JOIN best_score b
-        ON g.guestId = b.guestId
-       AND g.score   = b.bestScore
-      WHERE g.time = (
-        SELECT MIN(time)
-        FROM game_logs
-        WHERE guestId = g.guestId
-          AND score   = g.score
-      )
+    /* Rank every round inside its own guestId bucket            */
+    /* – highest score first, break ties with fastest time,       */
+    /*   and (rare) identical‑time ties with earliest timestamp.  */
+    WITH ranked AS (
+      SELECT
+        u.guestId,
+        u.name,
+        u.isGuest,
+        l.score       AS bestScore,
+        l.total,
+        l.time,
+        l.timestamp,
+        ROW_NUMBER() OVER (
+          PARTITION BY u.guestId
+          ORDER BY l.score DESC, l.time ASC, l.timestamp ASC
+        ) AS rn
+      FROM users      u
+      JOIN game_logs  l ON l.guestId = u.guestId
     )
-    /* 3️⃣  pull user info and sort */
-    SELECT u.guestId,
-           u.name,
-           u.isGuest,
-           br.score     AS bestScore,
-           br.total,
-           br.time,
-           br.timestamp
-    FROM best_round br
-    JOIN users u ON u.guestId = br.guestId
-    ORDER BY bestScore DESC, time ASC;   -- remove LIMIT to keep everyone
+
+    /* Keep only the #1 round for each guest                      */
+    SELECT guestId,
+           name,
+           isGuest,
+           bestScore,
+           total,
+           time,
+           timestamp
+    FROM ranked
+    WHERE rn = 1                           -- one row per player
+    ORDER BY bestScore DESC, time ASC;     -- overall ordering
+    -- LIMIT 10  ←‑ re‑add if you still want a Top‑N cutoff
   `).all();
 
   res.json(rows.map(r => ({ ...r, isGuest: !!r.isGuest })));
 });
+
 
 
 app.get("/api/history/:guestId", (req, res) => {
