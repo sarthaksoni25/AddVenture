@@ -28,7 +28,7 @@ app.use(
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-  })
+  } )
 );
 
 app.use(express.json());
@@ -119,38 +119,43 @@ app.post("/api/log", (req, res) => {
 });
 
 app.get("/api/leaderboard", (req, res) => {
-  const rows = db
-    .prepare(
-      `
+  const rows = db.prepare(`
+    /* 1️⃣  best_score: one row per user with their max score */
+    WITH best_score AS (
+      SELECT guestId, MAX(score) AS bestScore
+      FROM game_logs
+      GROUP BY guestId
+    ),
+    /* 2️⃣  best_round: tie‑break with MIN(time) for that score */
+    best_round AS (
+      SELECT g.*
+      FROM game_logs g
+      JOIN best_score b
+        ON g.guestId = b.guestId
+       AND g.score   = b.bestScore
+      WHERE g.time = (
+        SELECT MIN(time)
+        FROM game_logs
+        WHERE guestId = g.guestId
+          AND score   = g.score
+      )
+    )
+    /* 3️⃣  pull user info and sort */
     SELECT u.guestId,
            u.name,
            u.isGuest,
-           l.score       AS bestScore,
-           l.total,
-           l.time,
-           l.timestamp
-    FROM users u
-    JOIN game_logs l
-      ON u.guestId = l.guestId
-    WHERE (l.score, l.time) IN (
-      SELECT score, MIN(time)
-      FROM game_logs
-      WHERE guestId = u.guestId
-        AND score = (
-          SELECT MAX(score)
-          FROM game_logs
-          WHERE guestId = u.guestId
-        )
-    )
-    GROUP BY u.guestId
-    ORDER BY bestScore DESC, l.time ASC
-    LIMIT 10;
-    `
-    )
-    .all();
+           br.score     AS bestScore,
+           br.total,
+           br.time,
+           br.timestamp
+    FROM best_round br
+    JOIN users u ON u.guestId = br.guestId
+    ORDER BY bestScore DESC, time ASC;   -- remove LIMIT to keep everyone
+  `).all();
 
-  res.json(rows.map((r) => ({ ...r, isGuest: !!r.isGuest })));
+  res.json(rows.map(r => ({ ...r, isGuest: !!r.isGuest })));
 });
+
 
 app.get("/api/history/:guestId", (req, res) => {
   const { guestId } = req.params;
