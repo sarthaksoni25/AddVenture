@@ -4,7 +4,7 @@ const cors = require("cors");
 const { db, upsertUser, insertGame } = require("./db");
 const { OAuth2Client } = require("google-auth-library");
 const path = require("path");
-
+const authenticate = require("./middleware/auth");
 const app = express();
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
@@ -28,7 +28,7 @@ app.use(
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-  } )
+  })
 );
 
 app.use(express.json());
@@ -74,7 +74,7 @@ app.get("/api/sums", (_, res) => {
   res.json(sums);
 });
 
-app.post("/api/log", (req, res) => {
+app.post("/api/log", authenticate, (req, res) => {
   const {
     guestId = null,
     name = "Guest",
@@ -150,7 +150,8 @@ app.get("/api/leaderboard", (req, res) => {
            timestamp
     FROM ranked
     WHERE rn = 1                           -- one row per player
-    ORDER BY bestScore DESC, time ASC;     -- overall ordering
+    ORDER BY bestScore DESC, time ASC     -- overall ordering
+    LIMIT 10; 
     -- LIMIT 10  ←‑ re‑add if you still want a Top‑N cutoff
   `).all();
 
